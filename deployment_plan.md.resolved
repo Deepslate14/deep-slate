@@ -1,0 +1,50 @@
+# 🚀 Deep Slate Launch Plan: Road to Saturday
+
+If your goal is to make **Deep Slate** 100% public and flawless by Saturday, you need a structured battle plan. You have a complex app (Web Proxy, WebSocket Chat, User Database, and Game Streaming). 
+
+Here is your day-by-day roadmap to get everything hosted, tested, and live without crashing.
+
+---
+
+## 🛠️ Phase 1: Pre-Launch Testing & Polish (Wednesday)
+Before putting it on the internet, you need to ensure nothing breaks when real people use it.
+
+- [ ] **Proxy Stress Test:** Type in heavy sites (`youtube.com`, `reddit.com`) into your proxy URL bar. Does the video streaming work smoothly? Do sub-links work?
+- [ ] **Chat Authentication:** Try to "break" the login server. Submit wrong passwords, make usernames with weird characters, and try to log in from two tabs at once. (We patched most of this, but verify it locally!).
+- [ ] **Admin Command Run:** Give yourself the Admin role using your `create-admin.js` script. Test `/rank`, `/search`, and `/clear` in the chat to make sure you have absolute control over moderation.
+- [ ] **Cross-Device Check:** Open `http://localhost:8080` on your phone (if on the same Wi-Fi) to guarantee the CSS scales correctly to mobile sizes.
+
+## 🔐 Phase 2: Configuration & Code Freeze (Thursday)
+You need to cleanly package the code so it is ready for a production server.
+
+- [ ] **Push to GitHub:** If you haven't already, put all of your code (except `node_modules`) into a private or public GitHub repository. This is how modern hosts pull your code.
+- [ ] **Gitignore Users Data:** Add `data/users.json` to a `.gitignore` file. You do **not** want your local testing data mixed with production accounts, and you don't want to accidentally overwrite real users when you push updates!
+- [ ] **Tune the Bare Server:** In `server.js`, your `maxConnectionsPerIP` is set to 1,000. That's fine for local, but on a public proxy, you might want to adjust it if you expect heavy traffic.
+- [ ] **Code Freeze:** Stop adding new features! Any feature you add between Thursday and Saturday is untested and likely to cause a launch-day bug. Focus only on fixes.
+
+## ☁️ Phase 3: Deployment & Hosting Setup (Friday)
+Deep Slate requires a Node.js backend. You cannot host this on basic "static" providers like standard GitHub Pages or Vercel (without serverless adaptations) because you have WebSockets and a live proxy server. 
+
+- [ ] **Pick a Backend Host:** Choose a hosting provider that supports Node.js web services. Popular options for proxy/chat apps include:
+  - **Render.com** (Has a free tier, but sleeps when inactive).
+  - **Railway.app** (Cheap, 24/7 uptime, very fast).
+  - **Google Cloud Run** *(Note: I can actually automatically deploy your app to Cloud Run right now from this terminal!)*
+- [ ] **Deploy the Service:** Connect your GitHub repo to the host. Ensure the start command is `node server.js` or `npm start`.
+- [ ] **HTTPS Testing:** Your host should automatically give you a secure `https://` URL. The proxy (Ultraviolet) **strictly requires HTTPS** to intercept traffic using Service Workers. Without HTTPS, the proxy will entirely fail.
+
+## 🌍 Phase 4: Domains & The Public Release (Saturday)
+- [ ] **Configure Spaceship.com Domain DNS (`deepslate.org`):** 
+  1. Once purchased, login to Spaceship and go to your **Launchpad**.
+  2. Click on **deepslate.org**, then go down to the **Advanced DNS** settings.
+  3. Delete any default **Parking Records**.
+  4. Create a new **CNAME Record**:
+     - **Host:** `@` (or `www` depending on your hosting provider's instructions)
+     - **Value:** The live server URL that your hosting provider gives you (e.g., `your-app.onrender.com`).
+  5. Wait 15–30 minutes for the `deepslate.org` domain to link up across the internet.
+- [ ] **Warm Up the Server:** Create your actual Owner account on the live server. You can run your `create-admin.js` script safely from the web terminal instance of your cloud host.
+- [ ] **Launch:** Drop your shiny new `https://deepslate.org` link to your community/school/friends. 
+- [ ] **Monitor:** Watch your host's server logs for the first 2 hours. Look for the proxy running out of memory, or users spamming the chat. 
+
+---
+### 💡 How do you want to tackle deployment?
+If you want to handle hosting today, I can either write you the terminal commands to connect to GitHub, help you write a `Dockerfile`, or start the Google Cloud Run deployment process. Let me know what hosting strategy you want to take!

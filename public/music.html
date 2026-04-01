@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Slate Music</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e2532;
+            --secondary: #131720;
+            --accent: #00b5d8;
+            --accent-glow: #0bc5ea;
+            --music-accent: #1db954;
+            /* Spotify green for music vibe */
+            --music-glow: #1ed760;
+            --text: #e2e8f0;
+            --bg-dark: rgba(19, 23, 32, 0.95);
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family: 'Pixelify Sans', 'Segoe UI', Tahoma, sans-serif;
+            background-image: url('bg.png');
+            background-size: 256px 256px;
+            background-repeat: repeat;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(10, 10, 10, 0.72);
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header-logo {
+            max-width: 180px;
+            border-radius: 12px;
+            animation: float 4s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        header p {
+            color: #a0aec0;
+            font-size: 1.1rem;
+            margin: 0;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .back-link:hover {
+            transform: translateX(-8px);
+            color: var(--music-accent);
+        }
+
+        /* Section label */
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--music-accent);
+            margin-bottom: 1rem;
+            margin-top: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, rgba(29, 185, 84, 0.4), transparent);
+        }
+
+        /* Platform cards (big featured) */
+        .platforms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .platform-card {
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            height: 180px;
+            display: flex;
+            align-items: flex-end;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .platform-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(29, 185, 84, 0.3);
+            border-color: var(--music-accent);
+        }
+
+        .platform-card .card-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.5s ease;
+        }
+
+        .platform-card:hover .card-bg {
+            transform: scale(1.08);
+        }
+
+        .platform-card .card-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.3) 60%, transparent 100%);
+        }
+
+        .platform-card .card-info {
+            position: relative;
+            z-index: 2;
+            padding: 1.2rem 1.5rem;
+            width: 100%;
+        }
+
+        .platform-card .card-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            margin-bottom: 0.4rem;
+            object-fit: contain;
+        }
+
+        .platform-card .card-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        .platform-card .card-desc {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .platform-card .card-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(29, 185, 84, 0.2);
+            border: 1px solid var(--music-accent);
+            color: var(--music-accent);
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 0.25rem 0.6rem;
+            border-radius: 50px;
+        }
+
+        /* Music player */
+        #player-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #player-container.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .player-navbar {
+            height: 60px;
+            width: 100%;
+            background: linear-gradient(to right, #111, #1a1a1a);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            box-sizing: border-box;
+            border-bottom: 2px solid var(--music-accent);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            z-index: 2100;
+        }
+
+        .player-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--music-accent);
+            font-weight: 900;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .track-badge {
+            background: rgba(29, 185, 84, 0.15);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            border: 1px solid var(--music-accent);
+            font-size: 0.9rem;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        .player-actions {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: #eee;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            font-size: 0.9rem;
+            font-family: 'Pixelify Sans', sans-serif;
+        }
+
+        .action-btn:hover {
+            color: var(--music-accent);
+            transform: scale(1.1);
+        }
+
+        .action-btn.close {
+            color: #ff5555;
+        }
+
+        .action-btn.close:hover {
+            color: #ff8888;
+            text-shadow: 0 0 10px rgba(255, 85, 85, 0.5);
+        }
+
+        iframe#music-iframe {
+            flex-grow: 1;
+            width: 100%;
+            border: none;
+            background: #000;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2050;
+        }
+
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 8px solid rgba(29, 185, 84, 0.1);
+            border-top: 8px solid var(--music-accent);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.2);
+        }
+
+        /* Pulse equalizer bars */
+        .eq-bars {
+            display: flex;
+            gap: 5px;
+            align-items: flex-end;
+            height: 40px;
+            margin-top: 2rem;
+        }
+
+        .eq-bar {
+            width: 6px;
+            background: var(--music-accent);
+            border-radius: 3px;
+            animation: eq 0.8s ease-in-out infinite alternate;
+            box-shadow: 0 0 8px var(--music-accent);
+        }
+
+        .eq-bar:nth-child(1) {
+            animation-delay: 0s;
+            animation-duration: 0.7s;
+        }
+
+        .eq-bar:nth-child(2) {
+            animation-delay: 0.1s;
+            animation-duration: 0.5s;
+        }
+
+        .eq-bar:nth-child(3) {
+            animation-delay: 0.2s;
+            animation-duration: 0.9s;
+        }
+
+        .eq-bar:nth-child(4) {
+            animation-delay: 0.05s;
+            animation-duration: 0.6s;
+        }
+
+        .eq-bar:nth-child(5) {
+            animation-delay: 0.15s;
+            animation-duration: 0.8s;
+        }
+
+        @keyframes eq {
+            from {
+                height: 8px;
+                opacity: 0.6;
+            }
+
+            to {
+                height: 36px;
+                opacity: 1;
+            }
+        }
+
+        .loading-msg {
+            margin-top: 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: var(--music-accent);
+            text-transform: uppercase;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.4;
+                transform: scale(0.95);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 0.4;
+                transform: scale(0.95);
+            }
+        }
+
+        .footer {
+            margin-top: 5rem;
+            text-align: center;
+            padding: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header-logo {
+                max-width: 180px;
+            }
+
+            .platforms-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .platform-card {
+                height: 150px;
+            }
+
+            .card-title {
+                font-size: 1.1rem;
+            }
+
+            .card-desc {
+                font-size: 0.7rem;
+            }
+
+            .player-navbar {
+                padding: 0.5rem 1rem;
+                flex-wrap: wrap;
+                height: auto;
+                gap: 0.8rem;
+            }
+
+            .player-brand {
+                font-size: 1.1rem;
+            }
+
+            .track-badge {
+                display: none;
+            }
+
+            /* Hide on mobile to save space */
+            .player-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .action-btn {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+    <script src="/uv/uv.bundle.js"></script>
+    <script src="/uv.config.js"></script>
+    <script src="/baremux/index.js"></script>
+    <script src="/cloaking.js"></script>
+    <script src="/settings.js"></script>
+</head>
+
+<body>
+    <div class="overlay"></div>
+
+    <!-- Music Player -->
+    <div id="player-container">
+        <nav class="player-navbar">
+            <div class="player-brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                </svg>
+                DEEP SLATE
+                <span class="track-badge" id="player-track-title">Now Playing</span>
+            </div>
+            <div class="player-actions">
+                <button class="action-btn" onclick="reloadPlayer()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 4v6h-6" />
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                    </svg>
+                    Reload
+                </button>
+                <button class="action-btn" onclick="toggleFullscreen()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                    </svg>
+                    Fullscreen
+                </button>
+                <button class="action-btn close" onclick="closePlayer()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                    EXIT
+                </button>
+            </div>
+        </nav>
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loader"></div>
+            <div class="eq-bars">
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+            </div>
+            <div class="loading-msg">Tuning In...</div>
+        </div>
+        <iframe id="music-iframe"></iframe>
+    </div>
+
+    <div class="container" id="main-ui">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <a href="/" class="back-link" style="margin-bottom: 0;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                </svg>
+                Terminal
+            </a>
+            <a href="/credits.html" class="back-link" style="margin-bottom: 0; color: var(--muted);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                Credits
+            </a>
+        </div>
+
+        <header>
+            <img src="logo.png" alt="Deep Slate" class="header-logo" onerror="this.style.display='none';">
+            <p>Unblocked music. Stream anything. No limits.</p>
+        </header>
+
+        <!-- Streaming Platforms -->
+        <div class="section-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+            </svg>
+            Streaming Platforms
+        </div>
+        <div class="platforms-grid" id="platforms-grid"></div>
+
+        <!-- Music Discovery -->
+        <div class="section-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Discover & Explore
+        </div>
+        <div class="platforms-grid" id="discover-grid"></div>
+
+        <div class="footer">
+            Deep Slate Proxy &copy; 2026. Powered by Ultraviolet &amp; Bare-Mux.
+        </div>
+    </div>
+
+    <script>
+        async function initUV() {
+            if ('serviceWorker' in navigator) {
+                await navigator.serviceWorker.register('/sw.js', { scope: __uv$config.prefix });
+            }
+            const conn = new BareMux.BareMuxConnection('/baremux/worker.js');
+            if (!await conn.getTransport()) {
+                await conn.setTransport('/bare-as-module3/index.mjs', [location.origin + '/bare/']);
+            }
+        }
+        initUV();
+
+        const platforms = [
+            {
+                title: "Spotify",
+                desc: "Stream 100M+ songs & podcasts",
+                url: "https://open.spotify.com",
+                badge: "POPULAR",
+                bg: "linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%)",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/512px-Spotify_logo_without_text.svg.png"
+            },
+            {
+                title: "SoundCloud",
+                desc: "Discover underground artists & mixes",
+                url: "https://soundcloud.com",
+                badge: "FREE",
+                bg: "linear-gradient(135deg, #1a0a00 0%, #3d1800 50%, #ff5500 200%)",
+                logo: "https://a-v2.sndcdn.com/assets/images/sc-icons/favicon-2cadd14bdb.ico"
+            },
+            {
+                title: "YouTube Music",
+                desc: "Official music videos & live sets",
+                url: "https://music.youtube.com",
+                badge: "HD VIDEO",
+                bg: "linear-gradient(135deg, #1a0000 0%, #3d0000 50%, #ff0000 200%)",
+                logo: "https://music.youtube.com/img/favicon_144.png"
+            },
+            {
+                title: "Apple Music",
+                desc: "Lossless audio & spatial sound",
+                url: "https://music.apple.com",
+                badge: "LOSSLESS",
+                bg: "linear-gradient(135deg, #1a0a1a 0%, #2d0a2d 50%, #fc3c44 200%)",
+                logo: "https://www.apple.com/favicon.ico"
+            }
+        ];
+
+        const discover = [
+            {
+                title: "Bandcamp",
+                desc: "Support indie artists directly",
+                url: "https://bandcamp.com",
+                badge: "INDIE",
+                bg: "linear-gradient(135deg, #001a00 0%, #00351a 50%, #1da0c3 200%)",
+                logo: "https://s4.bcbits.com/img/favicon/favicon-32x32.png"
+            },
+            {
+                title: "Last.fm",
+                desc: "Track your music taste & discover new artists",
+                url: "https://www.last.fm",
+                badge: "STATS",
+                bg: "linear-gradient(135deg, #1a0000 0%, #2d0000 50%, #d51007 200%)",
+                logo: "https://www.last.fm/static/images/lastfm_avatar_twitter.png"
+            },
+            {
+                title: "Genius",
+                desc: "Lyrics, annotations & music knowledge",
+                url: "https://genius.com",
+                badge: "LYRICS",
+                bg: "linear-gradient(135deg, #1a1a00 0%, #2a2200 50%, #ffff64 200%)",
+                logo: "https://assets.genius.com/images/apple-touch-icon.png"
+            },
+            {
+                title: "NTS Radio",
+                desc: "24/7 global underground radio",
+                url: "https://www.nts.live",
+                badge: "LIVE",
+                bg: "linear-gradient(135deg, #001a0f 0%, #002a18 50%, #00ff87 200%)",
+                logo: "https://www.nts.live/images/icons/nts-icon-512.png"
+            }
+        ];
+
+        function buildCards(data, gridId) {
+            const grid = document.getElementById(gridId);
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'platform-card';
+                card.innerHTML = `
+                    <div class="card-bg" style="background: ${item.bg};"></div>
+                    <div class="card-gradient"></div>
+                    <span class="card-badge">${item.badge}</span>
+                    <div class="card-info">
+                        <img class="card-logo" src="${item.logo}" alt="${item.title}" onerror="this.style.display='none'">
+                        <div class="card-title">${item.title}</div>
+                        <div class="card-desc">${item.desc}</div>
+                    </div>
+                `;
+                card.onclick = () => openPlayer(item.url, item.title);
+                grid.appendChild(card);
+            });
+        }
+
+        buildCards(platforms, 'platforms-grid');
+        buildCards(discover, 'discover-grid');
+
+        const player = document.getElementById('player-container');
+        const iframe = document.getElementById('music-iframe');
+        const loading = document.getElementById('loading-overlay');
+        const mainUI = document.getElementById('main-ui');
+        const trackTitle = document.getElementById('player-track-title');
+
+        function openPlayer(url, title) {
+            trackTitle.innerText = title;
+            player.style.display = 'flex';
+            setTimeout(() => player.classList.add('active'), 10);
+            loading.style.display = 'flex';
+            mainUI.style.display = 'none';
+
+            const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
+            iframe.src = encoded;
+            iframe.onload = () => { loading.style.display = 'none'; };
+        }
+
+        function closePlayer() {
+            player.classList.remove('active');
+            setTimeout(() => {
+                player.style.display = 'none';
+                iframe.src = 'about:blank';
+                mainUI.style.display = 'block';
+            }, 500);
+        }
+
+        function reloadPlayer() {
+            const cur = iframe.src;
+            iframe.src = 'about:blank';
+            loading.style.display = 'flex';
+            setTimeout(() => { iframe.src = cur; }, 100);
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                iframe.requestFullscreen().catch(() => { });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && player.classList.contains('active')) closePlayer();
+        });
+
+        // Ore spawning removed due to copyright compliance.
+        function spawnOres() {
+            // No-op
+        }
+        window.addEventListener('load', spawnOres);
+    </script>
+</body>
+
+</html>

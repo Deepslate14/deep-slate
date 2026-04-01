@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | Your Show Host :D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+    <script src="/cloaking.js"></script>
+    <script src="/settings.js"></script>
+    <style>
+        :root {
+            --bg: #0d0f14;
+            --surface: #1e2532;
+            --accent: #00b5d8;
+            --text: #e2e8f0;
+            --muted: #a0aec0;
+            --gold: #f5c518;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            font-family: 'Pixelify Sans', 'Segoe UI', sans-serif;
+            background-image: url('bg.png');
+            background-size: 256px;
+            background-repeat: repeat;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .overlay {
+            position: fixed; inset: 0;
+            background: rgba(10, 10, 15, 0.82);
+            backdrop-filter: blur(8px);
+            z-index: 1;
+        }
+
+        .container {
+            position: relative; z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, var(--accent), #0bc5ea);
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 0 30px rgba(0, 181, 216, 0.4);
+            border: 4px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(0, 181, 216, 0.5);
+        }
+
+        .tagline {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+
+        /* Portfolio Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 181, 216, 0.2);
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--accent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .project-card:hover::before { opacity: 1; }
+
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .project-desc {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
+        .tag {
+            background: rgba(0, 181, 216, 0.12);
+            color: var(--accent);
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4rem;
+            transition: color 0.3s;
+        }
+        .nav-back:hover { color: var(--accent); }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            margin-top: 2rem;
+            background: rgba(255,255,255,0.02);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-item { text-align: center; }
+        .stat-val { display: block; font-size: 2rem; font-weight: 900; color: var(--accent); }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .stats { flex-direction: column; gap: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="container">
+        <header class="profile-header">
+            <div class="profile-img">🧑‍💻</div>
+            <h1>Your Show Host :D</h1>
+            <div class="tagline">Lead Developer & Visionary</div>
+            
+            <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 1rem;">
+                <a href="https://discord.com/" target="_blank" class="credit-item" style="padding: 0.6rem 1.5rem; background: #5865F2; border: none; border-radius: 50px; text-decoration: none; display: flex; align-items: center; gap: 10px; transition: all 0.3s ease;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19.27 4.5A14.94 14.94 0 0015.44 3.3a.05.05 0 00-.05.02 10.33 10.33 0 00-.45.93.05.05 0 01-.08 0 13.78 13.78 0 00-5.72 0 .05.05 0 01-.08 0 10.33 10.33 0 00-.45-.93.05.05 0 00-.05-.02A14.94 14.94 0 004.73 4.5a.05.05 0 00-.02.02C2.01 8.56 1.27 12.52 1.63 16.44a.05.05 0 00.02.04c1.8 1.33 3.53 2.14 5.2 2.65a.05.05 0 00.06-.02c.4-.53.74-1.1 1.04-1.7a.05.05 0 00-.03-.07 9.68 9.68 0 01-1.6-.76.05.05 0 010-.08l.32-.24a.05.05 0 01.05 0c3.58 1.65 7.46 1.65 11 0a.05.05 0 01.05 0l.32.24a.05.05 0 010 .08 9.68 9.68 0 01-1.6.76.05.05 0 00-.03.07c.3.6.64 1.17 1.04 1.7a.05.05 0 00.06.02 14.88 14.88 0 005.2-2.65.05.05 0 00.02-.04c.44-4.53-.78-8.46-3.1-11.92a.05.05 0 00-.02-.02zM8.52 13.4c-.88 0-1.6-.82-1.6-1.83 0-1.02.7-1.83 1.6-1.83s1.62.81 1.62 1.83c0 1.01-.72 1.83-1.62 1.83zm6.96 0c-.88 0-1.6-.82-1.6-1.83 0-1.02.7-1.83 1.6-1.83s1.62.81 1.62 1.83c0 1.01-.72 1.83-1.62 1.83z"/>
+                    </svg>
+                    <span style="color: white; font-weight: 800; letter-spacing: 1.5px;">@deepslate1414</span>
+                </a>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-val">2</span>
+                    <span class="stat-label">Projects</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-val">∞</span>
+                    <span class="stat-label">Creativity</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-val">100%</span>
+                    <span class="stat-label">Commitment</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="section-label" style="text-align: center; margin-bottom: 2rem; font-size: 1rem; color: var(--accent); font-weight: 900; letter-spacing: 5px; text-transform: uppercase; border-bottom: 1px solid rgba(0, 181, 216, 0.2); padding-bottom: 1rem;">
+            Owner Projects
+        </div>
+        <div class="projects-grid">
+            <!-- Deep Slate -->
+            <div class="project-card">
+                <div class="project-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/></svg>
+                    Deep Slate
+                </div>
+                <p class="project-desc">A premium, high-performance web proxy and entertainment hub. Built for freedom and security on the web.</p>
+                <div class="project-tags">
+                    <span class="tag">Ultraviolet</span>
+                    <span class="tag">Bare-Mux</span>
+                    <span class="tag">Node.js</span>
+                    <span class="tag">Express</span>
+                </div>
+            </div>
+
+            <!-- Deep Slate Chat -->
+            <div class="project-card">
+                <div class="project-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Chat V2.0-ULTRA
+                </div>
+                <p class="project-desc">A secure, real-time communication platform with advanced administrative controls and private messaging.</p>
+                <div class="project-tags">
+                    <span class="tag">Socket.io</span>
+                    <span class="tag">WebSockets</span>
+                    <span class="tag">Bcrypt</span>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="section-label" style="text-align: center; margin-top: 4rem; margin-bottom: 2rem; font-size: 1rem; color: var(--muted); font-weight: 800; letter-spacing: 5px; text-transform: uppercase;">
+            Upcoming Ventures
+        </div>
+        <div class="projects-grid" style="margin-top: 0;">
+            <!-- Future Project -->
+            <div class="project-card" style="opacity: 0.6;">
+                <div class="project-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Next Project
+                </div>
+                <p class="project-desc">Something big is in the works. Stay tuned for the next evolution of Deep Slate.</p>
+                <div class="project-tags">
+                    <span class="tag">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/credits.html" class="nav-back">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Back to Credits
+            </a>
+        </div>
+
+        <footer style="text-align: center; margin-top: 4rem; opacity: 0.5; font-size: 0.8rem;">
+            Deep Slate &copy; 2026. Made with passion.
+        </footer>
+    </div>
+</body>
+</html>

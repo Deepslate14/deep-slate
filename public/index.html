@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Slate Proxy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e2532;
+            /* Deepslate blue-gray */
+            --secondary: #131720;
+            /* Darker stone for depth */
+            --accent: #00b5d8;
+            /* The intense bright blue/cyan from the arrow */
+            --accent-glow: #0bc5ea;
+            /* Cyan glow effect */
+            --text: #e2e8f0;
+            /* Crisp icy white */
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Pixelify Sans', 'Segoe UI', Tahoma, sans-serif;
+            /* Background uses the generated deepslate texture */
+            background-image: url('bg.png');
+            background-size: 256px 256px;
+            /* Adjust scale of texture */
+            background-repeat: repeat;
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Overlay to dim the background slightly */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(20, 20, 20, 0.4);
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            background-color: rgba(45, 45, 45, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 2px solid #555;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 3rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #dcdcdc;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-container {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .logo-container img {
+            max-width: 220px;
+            /* Big enough to showcase the awesome pixel art */
+            width: 100%;
+            border-radius: 15px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-8px);
+                filter: drop-shadow(0 15px 35px rgba(11, 197, 234, 0.4));
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        h1 {
+            display: none;
+            /* Hide old text, logo speaks for itself! */
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #a0aec0;
+            margin-bottom: 2rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .search-box {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            background-color: rgba(20, 20, 20, 0.9);
+            color: #fff;
+            outline: none;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus {
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 10px rgba(17, 170, 136, 0.5);
+            background-color: rgba(30, 30, 30, 0.9);
+        }
+
+        input[type="submit"],
+        button {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: var(--accent);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="submit"]:hover,
+        button:hover {
+            background-color: var(--accent-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 181, 216, 0.4);
+        }
+
+        input[type="submit"]:active,
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-links {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: #15c9a0;
+            text-decoration: underline;
+        }
+
+        /* Shortcuts */
+        .shortcuts {
+            margin-top: 1.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.9rem;
+        }
+
+        .shortcut {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.45rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .shortcut:hover {
+            transform: translateY(-6px) scale(1.12);
+        }
+
+        .shortcut-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .shortcut:hover .shortcut-icon {
+            background: rgba(0, 181, 216, 0.15);
+            border-color: var(--accent);
+            box-shadow: 0 6px 20px rgba(0, 181, 216, 0.25);
+        }
+
+        .shortcut-icon img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
+
+        .shortcut-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #888;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+
+        .shortcut:hover .shortcut-label {
+            color: var(--accent);
+        }
+
+        .shortcuts-divider {
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+            margin: 1.4rem 0 0.2rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            .logo-container img {
+                max-width: 220px;
+            }
+
+            p {
+                font-size: 0.95rem;
+            }
+
+            input[type="text"] {
+                font-size: 1rem;
+                padding: 0.8rem 1.2rem;
+            }
+
+            input[type="submit"],
+            button {
+                padding: 0.8rem;
+                font-size: 1rem;
+                width: 100%;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                gap: 0.8rem;
+            }
+
+            .nav-link {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+    <script src="/uv/uv.bundle.js"></script>
+    <script src="/uv.config.js"></script>
+    <script src="/baremux/index.js"></script>
+    <script src="/cloaking.js"></script>
+    <script src="/settings.js"></script>
+</head>
+
+<body>
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="logo-container">
+            <img src="logo.png" alt="Deep Slate Proxy"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <h1 style="display:none; color: var(--accent);">DEEPSLATE</h1>
+        </div>
+        <p>Unblock the web. Rock-solid bypassing.</p>
+
+        <form class="search-box" action="#" method="GET" id="proxy-form">
+            <input type="text" id="url" name="url" placeholder="Enter a URL to unblock (e.g., example.com)"
+                autocomplete="off" autofocus required>
+            <button type="submit">Browse</button>
+        </form>
+
+        <!-- Site Shortcuts -->
+        <div class="shortcuts" id="shortcuts"></div>
+        <div class="shortcuts-divider"></div>
+
+        <div class="nav-links">
+            <a href="/games.html" class="nav-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="6" width="20" height="12" rx="2" />
+                    <path d="M6 12h4" />
+                    <path d="M8 10v4" />
+                    <path d="M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                </svg>
+                Games
+            </a>
+            <a href="/music.html" class="nav-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                </svg>
+                Music
+            </a>
+            <a href="/movies.html" class="nav-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+                    <line x1="7" y1="2" x2="7" y2="22" />
+                    <line x1="17" y1="2" x2="17" y2="22" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <line x1="2" y1="7" x2="7" y2="7" />
+                    <line x1="17" y1="7" x2="22" y2="7" />
+                    <line x1="17" y1="17" x2="22" y2="17" />
+                    <line x1="2" y1="17" x2="7" y2="17" />
+                </svg>
+                Movies
+            </a>
+            <a href="/chat.html" class="nav-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                Chat
+            </a>
+            <a href="/credits.html" class="nav-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                Credits
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const shortcuts = [
+            { label: "Google", url: "https://www.google.com", icon: "https://www.google.com/favicon.ico" },
+            { label: "YouTube", url: "https://www.youtube.com", icon: "https://www.youtube.com/favicon.ico" },
+            { label: "Reddit", url: "https://www.reddit.com", icon: "https://www.reddit.com/favicon.ico" },
+            { label: "Discord", url: "https://discord.com/app", icon: "https://discord.com/assets/favicon.ico" },
+            { label: "Twitch", url: "https://www.twitch.tv", icon: "https://static.twitchstt.com/favicon.ico" },
+            { label: "X", url: "https://x.com", icon: "https://abs.twimg.com/favicons/twitter.2.ico" },
+            { label: "Netflix", url: "https://www.netflix.com", icon: "https://assets.nflxext.com/ffe/siteui/common/icons/nficon2016.ico" },
+        ];
+
+        function buildShortcuts() {
+            const grid = document.getElementById('shortcuts');
+            shortcuts.forEach(s => {
+                const a = document.createElement('a');
+                a.className = 'shortcut';
+                a.href = '#';
+                a.title = s.label;
+                a.innerHTML = `
+                    <div class="shortcut-icon">
+                        <img src="${s.icon}" alt="${s.label}" onerror="this.src='https://via.placeholder.com/30x30/222/555?text=${s.label[0]}'">
+                    </div>
+                    <span class="shortcut-label">${s.label}</span>
+                `;
+                a.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const encoded = __uv$config.prefix + __uv$config.encodeUrl(s.url);
+                    window.location.href = encoded;
+                });
+                grid.appendChild(a);
+            });
+        }
+
+        async function init() {
+            // Register the Service Worker
+            if ('serviceWorker' in navigator) {
+                await navigator.serviceWorker.register('/sw.js', {
+                    scope: __uv$config.prefix
+                }).then(() => {
+                    console.log('Deep Slate Service Worker registered successfully.');
+                }).catch(err => {
+                    console.error('Service worker registration failed:', err);
+                });
+            }
+
+            // Set up the bare transport via bare-mux (required by UV v2)
+            const conn = new BareMux.BareMuxConnection('/baremux/worker.js');
+            if (!await conn.getTransport()) {
+                const bareUrl = location.origin + '/bare/';
+                await conn.setTransport('/bare-as-module3/index.mjs', [bareUrl]);
+            }
+        }
+
+        init();
+        buildShortcuts();
+
+        function formatSearch(url) {
+            try {
+                return new URL(url).toString();
+            } catch (e) { }
+
+            try {
+                const withHttp = new URL(`http://${url}`);
+                if (withHttp.hostname.includes('.') || withHttp.hostname === 'localhost') {
+                    return withHttp.toString();
+                }
+            } catch (e) { }
+
+            return 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
+        }
+
+        document.getElementById('proxy-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            let urlInput = document.getElementById('url').value;
+
+            urlInput = formatSearch(urlInput);
+
+            // Encode and navigate
+            const encodedUrl = __uv$config.prefix + __uv$config.encodeUrl(urlInput);
+            window.location.href = encodedUrl;
+        });
+
+        // Ore spawning removed due to copyright compliance.
+        function spawnOres() {
+            // No-op
+        }
+        window.addEventListener('load', spawnOres);
+    </script>
+</body>
+
+</html>

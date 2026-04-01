@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Slate Games</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e2532;
+            /* Deepslate blue-gray */
+            --secondary: #131720;
+            /* Darker stone for depth */
+            --accent: #00b5d8;
+            /* The intense bright blue/cyan from the arrow */
+            --accent-glow: #0bc5ea;
+            --text: #e2e8f0;
+            --bg-dark: rgba(19, 23, 32, 0.95);
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family: 'Pixelify Sans', 'Segoe UI', Tahoma, sans-serif;
+            background-image: url('bg.png');
+            background-size: 256px 256px;
+            background-repeat: repeat;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(10, 10, 10, 0.7);
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            margin-bottom: 0.5rem;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(0, 181, 216, 0.6);
+        }
+
+        .header-logo {
+            max-width: 180px;
+            border-radius: 12px;
+            animation: float 4s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .back-link:hover {
+            transform: translateX(-8px);
+            color: #15c9a0;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 2rem;
+        }
+
+        .game-card {
+            background: rgba(45, 45, 45, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-card:hover {
+            transform: translateY(-12px) scale(1.03);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(17, 170, 136, 0.4);
+            background: rgba(60, 60, 60, 0.8);
+        }
+
+        .game-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background: #111;
+            transition: transform 0.5s ease;
+        }
+
+        .game-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .game-info {
+            padding: 1.2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.5px;
+        }
+
+        .game-desc {
+            font-size: 0.85rem;
+            color: #bbb;
+            line-height: 1.4;
+        }
+
+        /* Fullscreen Game Player */
+        #player-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #player-container.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .player-navbar {
+            height: 60px;
+            width: 100%;
+            background: linear-gradient(to right, #1a1a1a, #2a2a2a);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            box-sizing: border-box;
+            border-bottom: 2px solid var(--accent);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            z-index: 2100;
+        }
+
+        .player-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--accent);
+            font-weight: 900;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .game-name-badge {
+            background: rgba(17, 170, 136, 0.15);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            border: 1px solid var(--accent);
+            font-size: 0.9rem;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        .player-actions {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: #eee;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .action-btn.close {
+            color: #ff5555;
+        }
+
+        .action-btn.close:hover {
+            color: #ff8888;
+            text-shadow: 0 0 10px rgba(255, 85, 85, 0.5);
+        }
+
+        iframe#game-iframe {
+            flex-grow: 1;
+            width: 100%;
+            border: none;
+            background: #000;
+        }
+
+        /* Loading Screen */
+        .loading-overlay {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2050;
+        }
+
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 8px solid rgba(17, 170, 136, 0.1);
+            border-top: 8px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            box-shadow: 0 0 20px rgba(17, 170, 136, 0.2);
+        }
+
+        .loading-msg {
+            margin-top: 2rem;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: var(--accent);
+            text-transform: uppercase;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.4;
+                transform: scale(0.95);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 0.4;
+                transform: scale(0.95);
+            }
+        }
+
+        .footer {
+            margin-top: 5rem;
+            text-align: center;
+            padding: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+                letter-spacing: 2px;
+            }
+
+            .header-logo {
+                max-width: 180px;
+            }
+
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+                gap: 1rem;
+            }
+
+            .game-card img {
+                height: 100px;
+            }
+
+            .player-navbar {
+                padding: 0.5rem 1rem;
+                flex-wrap: wrap;
+                height: auto;
+                gap: 0.8rem;
+            }
+
+            .player-brand {
+                font-size: 1.1rem;
+            }
+
+            .game-name-badge {
+                display: none;
+            }
+
+            /* Hide on mobile to save space */
+            .player-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .action-btn {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+    <script src="/uv/uv.bundle.js"></script>
+    <script src="/uv.config.js"></script>
+    <script src="/baremux/index.js"></script>
+    <script src="/cloaking.js"></script>
+    <script src="/settings.js"></script>
+</head>
+
+<body>
+    <div class="overlay"></div>
+
+    <!-- The Infinite Games Player -->
+    <div id="player-container">
+        <nav class="player-navbar">
+            <div class="player-brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 12h4" />
+                    <path d="M8 10v4" />
+                    <path d="M15 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3-3a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+                    <rect x="2" y="6" width="20" height="12" rx="2" />
+                </svg>
+                DEEP SLATE
+                <span class="game-name-badge" id="player-game-title">Game Title</span>
+            </div>
+            <div class="player-actions">
+                <button class="action-btn" onclick="reloadGame()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 4v6h-6" />
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                    </svg>
+                    Reload
+                </button>
+                <button class="action-btn" onclick="togglePlayerFullscreen()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                    </svg>
+                    Fullscreen
+                </button>
+                <button class="action-btn close" onclick="closeGamePlayer()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                    EXIT GAME
+                </button>
+            </div>
+        </nav>
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loader"></div>
+            <div class="loading-msg">Initializing Game Stream</div>
+        </div>
+        <iframe id="game-iframe"></iframe>
+    </div>
+
+    <div class="container" id="main-ui">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <a href="/" class="back-link" style="margin-bottom: 0;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                </svg>
+                Terminal
+            </a>
+            <a href="/credits.html" class="back-link" style="margin-bottom: 0; color: var(--muted);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                Credits
+            </a>
+        </div>
+
+        <header>
+            <img src="logo.png" alt="Deep Slate" class="header-logo"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <h1 style="display:none; color: var(--accent);">Deep Slate Games</h1>
+            <p>Direct game-only streaming. Zero distractions. High performance.</p>
+        </header>
+
+        <div class="games-grid" id="games-grid">
+            <!-- Game Nodes Injected Here -->
+        </div>
+
+        <div class="footer">
+            Deep Slate Proxy &copy; 2026. Powered by Ultraviolet & Bare-Mux.
+        </div>
+    </div>
+
+    <script>
+        // Data-driven games list with "Direct" URLs where possible
+        const games = [
+            {
+                title: "Tuff Client 1.12.2",
+                desc: "WASM Minecraft. Advanced Combat Client.",
+                url: "https://tuff.speedslicer.dev/",
+                img: "https://eaglercraft.ir/assets/favicon.png"
+            },
+            {
+                title: "Ragdoll Hit",
+                desc: "High-octane physics combat.",
+                url: "https://freetoplayz.github.io/ragdoll-hit/",
+                img: "https://ragdollhit2.github.io/img/logo.png"
+            },
+            {
+                title: "Slope",
+                desc: "The ultimate 3D neon runner.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/slope/index.html",
+                img: "https://slopegame.io/images/slope-logo.png"
+            },
+
+            {
+                title: "1v1.LOL",
+                desc: "Build, fight, and survive.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/1v1lol/index.html",
+                img: "https://play-lh.googleusercontent.com/90_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Retro Bowl",
+                desc: "The gridiron in 8-bit glory.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/retro-bowl/index.html",
+                img: "https://retrobowl.me/img/retro-bowl-logo.png"
+            },
+            {
+                title: "Subway Surfers",
+                desc: "Endless dash through the city.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/subway-surfers/index.html",
+                img: "https://subwaysurfers.com/wp-content/uploads/2021/01/subway-surfers-logo.png"
+            },
+            {
+                title: "Moto X3M",
+                desc: "Insane bike stunt action.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/motox3m/index.html",
+                img: "https://play-lh.googleusercontent.com/9_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Geometry Dash",
+                desc: "Jump with the rhythm.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/geodash/index.html",
+                img: "https://play-lh.googleusercontent.com/3_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Happy Wheels",
+                desc: "Don't lose your limbs.",
+                url: "https://totaljerkface.com/happy_wheels.tjf",
+                img: "https://play-lh.googleusercontent.com/8_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Run 3",
+                desc: "Defy gravity in space.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/run3/index.html",
+                img: "https://play-lh.googleusercontent.com/7_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Tank Trouble",
+                desc: "Mazes, tanks, and explosions.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/tank-trouble-2/index.html",
+                img: "https://play-lh.googleusercontent.com/6_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Cookie Clicker",
+                desc: "Bake until you break the universe.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/cookie-clicker/index.html",
+                img: "https://play-lh.googleusercontent.com/5_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Smash Karts",
+                desc: "Battle to the death in karts.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/smashkarts/index.html",
+                img: "https://play-lh.googleusercontent.com/S_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Shell Shockers",
+                desc: "The world's first egg-based FPS.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/shellshockers/index.html",
+                img: "https://play-lh.googleusercontent.com/E_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Basketball Stars",
+                desc: "1v1 hoops action.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/basketball-stars/index.html",
+                img: "https://play-lh.googleusercontent.com/B_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Temple Run",
+                desc: "Run from the demon monkeys.",
+                url: "https://3kh0-assets.silvereen.net/3kh0-assets/temple-run-2/index.html",
+                img: "https://play-lh.googleusercontent.com/T_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Ragdoll Playground",
+                desc: "A physics sandbox for chaos.",
+                url: "https://freetoplayz.github.io/ragdoll-playground/",
+                img: "https://ragdollhit2.github.io/ragdoll-playground/img/logo.png"
+            },
+            {
+                title: "Ragdoll Hit Stickman",
+                desc: "The stickman brawl continues.",
+                url: "https://freetoplayz.github.io/ragdoll-hit-stickman/",
+                img: "https://ragdollhit2.github.io/ragdoll-hit-stickman/img/logo.png"
+            },
+            {
+                title: "BitLife",
+                desc: "Live a life. Make choices. Face consequences.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/bitlife/",
+                img: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/e5/33/97/e5339794-4d09-f0b4-8e1a-22d5e5f8dcf3/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/230x0w.webp"
+            },
+            {
+                title: "Subway Surfers Chicago",
+                desc: "Dash through the Windy City.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/subway-surfers-chicago/",
+                img: "https://subwaysurfers.com/wp-content/uploads/2021/01/subway-surfers-logo.png"
+            },
+            {
+                title: "Slither.io",
+                desc: "Grow your snake. Eat everyone.",
+                url: "https://pete.readingforfun.co.com/storage/ag/originals/slither",
+                img: "https://play-lh.googleusercontent.com/OIZ7PmCkiSO24mrnWlIoO9LALjqnOHYLVtVLJT7S--sEK9BaBqRFdE3KxBVE_ROnSg=w240-h480-rw"
+            },
+            {
+                title: "Paper.io 2",
+                desc: "Expand your territory. Eliminate rivals.",
+                url: "https://pete.readingforfun.co.com/storage/ag/originals/paperio2",
+                img: "https://play-lh.googleusercontent.com/6--6LGv4JjvlSWxHMl2IcG9-OWBiDfrJZW1gDEqAmrjt_kn5wHPcU_RiJWlSR8Jfpw=w240-h480-rw"
+            },
+            {
+                title: "Hole.io",
+                desc: "Swallow the city whole.",
+                url: "https://pete.readingforfun.co.com/storage/ag/originals/holeio",
+                img: "https://play-lh.googleusercontent.com/1vgwg_U22rCNJyVpXXD0C1oq3g3B1Puu14PfTbQr5zKBpqpCsR9dOD9D4h7DvUEtXmQe=w240-h480-rw"
+            },
+
+            {
+                title: "Slope 2",
+                desc: "The sequel to the neon runner.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/slope-2/",
+                img: "https://slopegame.io/images/slope-logo.png"
+            },
+            {
+                title: "Agar.io",
+                desc: "Grow your cell. Devour everything.",
+                url: "https://pete.readingforfun.co.com/storage/ag/originals/agar",
+                img: "https://play-lh.googleusercontent.com/lR0HSmzeUsxK_7rQSfJmPOOHJYb3gR9BkAlYzZpYYMFf8vNpq_OzJAi2D3SMsOiNmWY=w240-h480-rw"
+            },
+            {
+                title: "Skribbl.io",
+                desc: "Draw and guess with friends.",
+                url: "https://pete.readingforfun.co.com/storage/ag/originals/skribbl/",
+                img: "https://skribbl.io/res/apple-touch-icon.png"
+            },
+            {
+                title: "Crossy Road",
+                desc: "Hop across endless traffic.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/crossy-road/",
+                img: "https://play-lh.googleusercontent.com/gTi62Y1QzSw0p5oGOXbhpwFUCq7K7zM0drsgYdDpMF3JgE9_PVBsO6oXlGRmLaRVJSo=w240-h480-rw"
+            },
+            {
+                title: "Fruit Ninja",
+                desc: "Slice fruit. Don't hit bombs.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/fruit-ninja/",
+                img: "https://play-lh.googleusercontent.com/dJbK7MHzJvOB6fGa_gD6c9ZaAJ4RcqMQtI8DhKA6fG1BdJjUL3Ih4fG1BdJjUL3Ih4=w240-h480-rw"
+            },
+            {
+                title: "Stickman Hook",
+                desc: "Swing through levels like a spider.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/stickman-hook/",
+                img: "https://play-lh.googleusercontent.com/YM2HFjN7EAgmV4Oee_yYfPGpSYBBQVbqFpPqwuAhNHXiXdQoVKhPBvPOGRHgwQPCkA=w240-h480-rw"
+            },
+            {
+                title: "Drift Boss",
+                desc: "One-tap drifting madness.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/drift-boss/",
+                img: "https://play-lh.googleusercontent.com/pxnH_bmvF_1LQnzX5GjWi0F-XTm5_HFRS0Sp1AXXh1E5FpBX0zMHkdNNxpuF7eUgHw=w240-h480-rw"
+            },
+            {
+                title: "Idle Breakout",
+                desc: "Clicker meets brick breaker.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/idle-breakout/",
+                img: "https://play-lh.googleusercontent.com/v7eblMsXRmFHl0SjTpDz8o3lNxJh7YQibFM_OTw_2gvsW1vCZAqFuJw1JkP8q0vVq_M=w240-h480-rw"
+            },
+            {
+                title: "4 Colors",
+                desc: "Uno in your browser. No install needed.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/4-colors/",
+                img: "https://play-lh.googleusercontent.com/M4PImVxOtGwBq5iSdJfaEX5H5QJN3JIa7cKdZ7L4fH5QJN3JIa7cKdZ7L4fH5QJN3=w240-h480-rw"
+            },
+            {
+                title: "Moto X3M Pool Party",
+                desc: "Bike stunts in a summer splash.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/moto-x3m-pool-party/",
+                img: "https://play-lh.googleusercontent.com/9_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Moto X3M Spooky Land",
+                desc: "Halloween thrills on two wheels.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/moto-x3m-spooky-land/",
+                img: "https://play-lh.googleusercontent.com/9_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Temple Run 2",
+                desc: "The legendary sequel. Run faster.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/temple-run-2/",
+                img: "https://play-lh.googleusercontent.com/T_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Sky Riders",
+                desc: "Aerial bike stunts at insane heights.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/sky-riders/",
+                img: "https://play-lh.googleusercontent.com/K_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Highway Racer",
+                desc: "Dodge traffic at full speed.",
+                url: "https://pete.readingforfun.co.com/storage/ag/originals/highway-racer",
+                img: "https://play-lh.googleusercontent.com/H_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            },
+            {
+                title: "Candy Crush",
+                desc: "The iconic match-3 puzzle game.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/candy-crush",
+                img: "https://play-lh.googleusercontent.com/jZDpE6MQJVpSJIoHVB8E7MTdZPVeGcRiPF-pKLcbJaipqvIJzV65d2xGlZs2kPKyA1g=w240-h480-rw"
+            },
+            {
+                title: "Crazy Cattle 3D",
+                desc: "Stampede through chaos in 3D.",
+                url: "https://pete.readingforfun.co.com/storage/ag/arsenic/crazy-cattle-3d/",
+                img: "https://play-lh.googleusercontent.com/C_p9C0UfU6lWqH1V_WwXZfR6UfF9z9ZJ5Vq_k4zX9Y9y9z9z9z9z9z9z9z9z9z9z9z=w240-h480-rw"
+            }
+        ];
+
+        async function initUV() {
+            if ('serviceWorker' in navigator) {
+                await navigator.serviceWorker.register('/sw.js', {
+                    scope: __uv$config.prefix
+                });
+            }
+            const conn = new BareMux.BareMuxConnection('/baremux/worker.js');
+            if (!await conn.getTransport()) {
+                const bareUrl = location.origin + '/bare/';
+                await conn.setTransport('/bare-as-module3/index.mjs', [bareUrl]);
+            }
+        }
+
+        initUV();
+
+        const grid = document.getElementById('games-grid');
+        const player = document.getElementById('player-container');
+        const iframe = document.getElementById('game-iframe');
+        const loading = document.getElementById('loading-overlay');
+        const mainUI = document.getElementById('main-ui');
+        const playerTitle = document.getElementById('player-game-title');
+
+        // Create Game Tiles
+        games.forEach(game => {
+            const card = document.createElement('div');
+            card.className = 'game-card';
+            card.innerHTML = `
+                <img src="${game.img}" alt="${game.title}" onerror="this.src='https://via.placeholder.com/300x150/111/444?text=${game.title}'">
+                <div class="game-info">
+                    <div class="game-title">${game.title}</div>
+                    <div class="game-desc">${game.desc}</div>
+                </div>
+            `;
+            card.onclick = () => openGame(game.url, game.title);
+            grid.appendChild(card);
+        });
+
+        function openGame(url, title) {
+            playerTitle.innerText = title;
+            player.style.display = 'flex';
+            setTimeout(() => player.classList.add('active'), 10);
+            loading.style.display = 'flex';
+            mainUI.style.display = 'none';
+
+            const encodedUrl = __uv$config.prefix + __uv$config.encodeUrl(url);
+            iframe.src = encodedUrl;
+
+            iframe.onload = () => {
+                loading.style.display = 'none';
+            };
+        }
+
+        function closeGamePlayer() {
+            player.classList.remove('active');
+            setTimeout(() => {
+                player.style.display = 'none';
+                iframe.src = 'about:blank';
+                mainUI.style.display = 'block';
+            }, 500);
+        }
+
+        function reloadGame() {
+            const currentUrl = iframe.src;
+            iframe.src = 'about:blank';
+            loading.style.display = 'flex';
+            setTimeout(() => {
+                iframe.src = currentUrl;
+            }, 100);
+        }
+
+        function togglePlayerFullscreen() {
+            if (!document.fullscreenElement) {
+                iframe.requestFullscreen().catch(err => {
+                    alert(`Direct Fullscreen Error: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Close on Esc
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && player.classList.contains('active')) {
+                closeGamePlayer();
+            }
+        });
+
+        // Ore spawning removed due to copyright compliance.
+        function spawnOres() {
+            // No-op
+        }
+        window.addEventListener('load', spawnOres);
+    </script>
+</body>
+
+</html>
